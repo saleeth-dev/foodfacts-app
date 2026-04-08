@@ -1,47 +1,47 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import Container from '@mui/material/Container'
+import Button from '@mui/material/Button'
+import Typography from '@mui/material/Typography'
+import { useSelector, useDispatch } from 'react-redux'
+import { addItem, removeItem } from '../store/savedSlice'
 
-function DetailPage({ saved, dispatch }) {
+function DetailPage() {
   const { barcode } = useParams()
   const navigate = useNavigate()
+
+  const dispatch = useDispatch()
+  const savedItems = useSelector(state => state.saved.items)
 
   const [product, setProduct] = useState(null)
 
   useEffect(() => {
-    axios
-      .get(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`)
+    axios.get(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`)
       .then(res => setProduct(res.data.product))
   }, [barcode])
 
   if (!product) return <p>Loading...</p>
 
-  const isSaved = saved.some(p => p.code === barcode)
-
-  const handleSave = () => {
-    if (isSaved) {
-      dispatch({ type: "REMOVE", code: barcode })
-    } else {
-      dispatch({ type: "ADD", product })
-    }
-  }
+  const isSaved = savedItems.some(p => p.code === barcode)
 
   return (
-    <div>
-      <button onClick={() => navigate(-1)}>Back</button>
+    <Container>
+      <Button onClick={() => navigate(-1)}>Back</Button>
 
-      <h2>{product.product_name}</h2>
-      <img src={product.image_small_url} alt="" />
+      <Typography variant="h5">{product.product_name}</Typography>
 
-      <p>Brand: {product.brands}</p>
-
-      <p>Calories: {product.nutriments?.['energy-kcal_100g']}</p>
-      <p>Protein: {product.nutriments?.proteins_100g}</p>
-
-      <button onClick={handleSave}>
+      <Button
+        variant="contained"
+        onClick={() =>
+          isSaved
+            ? dispatch(removeItem(barcode))
+            : dispatch(addItem(product))
+        }
+      >
         {isSaved ? "Remove" : "Save"}
-      </button>
-    </div>
+      </Button>
+    </Container>
   )
 }
 

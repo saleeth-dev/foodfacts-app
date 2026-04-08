@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import axios from 'axios'
+import Container from '@mui/material/Container'
+import Typography from '@mui/material/Typography'
+import CircularProgress from '@mui/material/CircularProgress'
 import SearchBar from '../components/SearchBar'
 import FoodList from '../components/FoodList'
 
@@ -10,41 +13,31 @@ function HomePage() {
   const handleSearch = async (query) => {
     setLoading(true)
 
-    try {
-      const res = await axios.get(
-        'https://world.openfoodfacts.org/cgi/search.pl',
-        {
-          params: {
-            search_terms: query,
-            json: 1,
-            page_size: 10
-          }
+    const res = await axios.get(
+      'https://world.openfoodfacts.org/cgi/search.pl',
+      {
+        params: {
+          search_terms: query,
+          json: 1,
+          page_size: 10
         }
-      )
+      }
+    )
 
-      const filtered = res.data.products.filter(
-        (p) => p.product_name
-      )
-
-      setResults(filtered)
-
-    } catch (err) {
-      console.log(err)
-    } finally {
-      setLoading(false)
-    }
+    setResults(res.data.products)
+    setLoading(false)
   }
 
   return (
-    <div>
-      <h1>🥗 FoodFacts</h1>
+    <Container>
+      <Typography variant="h4" sx={{ mt: 2 }}>
+        Search Food
+      </Typography>
 
       <SearchBar onSearch={handleSearch} />
 
-      {loading && <p>Loading...</p>}
-
-      <FoodList products={results} />
-    </div>
+      {loading ? <CircularProgress /> : <FoodList products={results} />}
+    </Container>
   )
 }
 
